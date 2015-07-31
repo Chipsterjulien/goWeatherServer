@@ -3,22 +3,69 @@ package main
 import (
 	"github.com/gin-gonic/gin"
 	"github.com/jinzhu/gorm"
-	"log"
+	"github.com/op/go-logging"
+	"time"
 )
 
-func startApp(db *gorm.DB) {
-	r := gin.Default()
-
-	v1 := r.Group("api/v1")
-	{
-		v1.GET("/temperatures", GetTemperatures)
-	}
-	r.Run(":8080")
+type OnlyTemperature struct {
+	Temp float64
 }
 
-func GetTemperatures(c *gin.Context) {
-	temperatures := []Temperature{}
-	log.Fatal(c)
+type Ressource struct {
+	db *gorm.DB
+}
 
-	_ = temperatures
+func NewRessource(db *gorm.DB) Ressource {
+	return Ressource{db: db}
+}
+
+// Remove temperature with id
+func (r *Ressource) DeleteTemperature(c *gin.Context) {
+	log := logging.MustGetLogger("log")
+	id := c.Params.ByName("id")
+
+	if id != "" {
+	} else {
+		c.JSON(404, gin.H{"error": "Unable to remove temperature. No id given"})
+		log.Warning("Unable to remove temperature. No id given")
+	}
+}
+
+// Get all temperatures in database
+func (r *Ressource) GetTemperature(c *gin.Context) {
+	temperatures := []Temperature{}
+
+	r.db.Find(&temperatures)
+	if len(temperatures) == 0 {
+		c.JSON(404, gin.H{"error": "No temperature in database"})
+	} else {
+		c.JSON(200, temperatures)
+	}
+}
+
+// Post a temperature into database
+func (r *Ressource) PostTemperature(c *gin.Context) {
+	//log := logging.MustGetLogger("log")
+	var temp OnlyTemperature
+
+	c.Bind(&temp)
+	temperature := Temperature{
+		Temp: temp.Temp,
+		Date: time.Now(),
+	}
+
+	r.db.Save(&temperature)
+	c.JSON(200, temperature)
+}
+
+func startApp(db *gorm.DB) {
+	g := gin.Default()
+	r := NewRessource(db)
+
+	v1 := g.Group("api/v1")
+	{
+		v1.GET("/temperatures", r.GetTemperature)
+		v1.POST("/temperature", r.PostTemperature)
+	}
+	g.Run(":8080")
 }

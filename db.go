@@ -10,8 +10,8 @@ import (
 
 type Temperature struct {
 	Id   int `gorm:primary_key`
-	date string
-	temp time.Time
+	Temp float64
+	Date time.Time
 }
 
 func Initdb() *gorm.DB {
