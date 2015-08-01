@@ -16,7 +16,9 @@ type Ressource struct {
 }
 
 func NewRessource(db *gorm.DB) Ressource {
-	return Ressource{db: db}
+	return Ressource{
+		db: db,
+	}
 }
 
 // Remove temperature with id
@@ -25,6 +27,11 @@ func (r *Ressource) DeleteTemperature(c *gin.Context) {
 	id := c.Params.ByName("id")
 
 	if id != "" {
+		var temperature Temperature
+		r.db.First(&temperature, id)
+		r.db.Delete(&temperature)
+
+		c.JSON(200, gin.H{"id #" + id: "delete"})
 	} else {
 		c.JSON(404, gin.H{"error": "Unable to remove temperature. No id given"})
 		log.Warning("Unable to remove temperature. No id given")
