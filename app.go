@@ -52,7 +52,6 @@ func (r *Ressource) GetTemperature(c *gin.Context) {
 
 // Post a temperature into database
 func (r *Ressource) PostTemperature(c *gin.Context) {
-	//log := logging.MustGetLogger("log")
 	var temp OnlyTemperature
 
 	c.Bind(&temp)

@@ -4,6 +4,7 @@ import (
 	"github.com/jinzhu/gorm"
 	_ "github.com/mattn/go-sqlite3"
 	"github.com/op/go-logging"
+	//"github.com/spf13/viper"
 	"os"
 	"time"
 )
@@ -15,6 +16,7 @@ type Temperature struct {
 }
 
 func Initdb() *gorm.DB {
+	//viper.Get("path")
 	log := logging.MustGetLogger("log")
 	db, err := gorm.Open("sqlite3", "temperature.db")
 	if err != nil {
