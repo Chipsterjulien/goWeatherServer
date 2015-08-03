@@ -1,3 +1,5 @@
+debug = true
+
 [database]
 path = "/var/lib/goweather"
 filename = "temperature.db"

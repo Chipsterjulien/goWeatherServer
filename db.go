@@ -4,8 +4,9 @@ import (
 	"github.com/jinzhu/gorm"
 	_ "github.com/mattn/go-sqlite3"
 	"github.com/op/go-logging"
-	//"github.com/spf13/viper"
+	"github.com/spf13/viper"
 	"os"
+	"path/filepath"
 	"time"
 )
 
@@ -16,14 +17,19 @@ type Temperature struct {
 }
 
 func Initdb() *gorm.DB {
-	//viper.Get("path")
 	log := logging.MustGetLogger("log")
-	db, err := gorm.Open("sqlite3", "temperature.db")
+	db, err := gorm.Open(
+		"sqlite3",
+		filepath.Join(
+			viper.GetString("db.path"),
+			viper.GetString("db.filename"),
+		),
+	)
 	if err != nil {
 		log.Critical("Unable to open db file:", err)
 		os.Exit(1)
 	}
-	db.LogMode(true)
+	db.LogMode(viper.GetBool("debug"))
 	db.CreateTable(new(Temperature))
 	db.DB().Ping()
 
