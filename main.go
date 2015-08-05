@@ -1,12 +1,9 @@
 package main
 
 func main() {
-	confFilename := "goweather"
-	confPath := "."
-	logFilename := "errors.log"
-
-	//confPath := "/etc/goweather"
-	//logFilename := "/var/log/goweather/errors.log"
+	confPath := "/etc/goWeatherServer"
+	confFilename := "goWeatherServer"
+	logFilename := "/var/log/goWeatherServer/errors.log"
 
 	fd := initLogging(&logFilename)
 	defer fd.Close()

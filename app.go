@@ -4,6 +4,8 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/jinzhu/gorm"
 	"github.com/op/go-logging"
+	"github.com/spf13/viper"
+	"strconv"
 	"time"
 )
 
@@ -73,5 +75,5 @@ func startApp(db *gorm.DB) {
 		v1.GET("/temperatures", r.GetTemperature)
 		v1.POST("/temperature", r.PostTemperature)
 	}
-	g.Run(":8080")
+	g.Run(":" + strconv.Itoa(viper.GetInt("port")))
 }
