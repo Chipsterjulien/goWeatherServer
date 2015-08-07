@@ -52,6 +52,75 @@ func (r *Ressource) GetTemperature(c *gin.Context) {
 	}
 }
 
+// Get all temperatures in database, filter and keep the temperature of the day
+func (r *Ressource) GetTemperaturesOfTheDay(c *gin.Context) {
+	temperatures := []Temperature{}
+	temperaturesWillBeReturned := []Temperature{}
+
+	r.db.Find(&temperatures)
+	if len(temperatures) == 0 {
+		c.JSON(404, gin.H{"error": "No temperature in database"})
+	} else {
+		now := time.Now()
+		for _, t := range temperatures {
+			if t.Date.Day() == now.Day() && t.Date.Month() == now.Month() && t.Date.Year() == now.Year() {
+				temperaturesWillBeReturned = append(temperaturesWillBeReturned, t)
+			}
+		}
+		if len(temperaturesWillBeReturned) == 0 {
+			c.JSON(404, gin.H{"error": "No temperature in database"})
+		} else {
+			c.JSON(200, temperaturesWillBeReturned)
+		}
+	}
+}
+
+// Get all temperatures in database, filter and keep the temperature of the month
+func (r *Ressource) GetTemperaturesOfTheMonth(c *gin.Context) {
+	temperatures := []Temperature{}
+	temperaturesWillBeReturned := []Temperature{}
+
+	r.db.Find(&temperatures)
+	if len(temperatures) == 0 {
+		c.JSON(404, gin.H{"error": "No temperature in database"})
+	} else {
+		now := time.Now()
+		for _, t := range temperatures {
+			if t.Date.Month() == now.Month() && t.Date.Year() == now.Year() {
+				temperaturesWillBeReturned = append(temperaturesWillBeReturned, t)
+			}
+		}
+		if len(temperaturesWillBeReturned) == 0 {
+			c.JSON(404, gin.H{"error": "No temperature in database"})
+		} else {
+			c.JSON(200, temperaturesWillBeReturned)
+		}
+	}
+}
+
+// Get all temperatures in database, filter and keep the temperature of the year
+func (r *Ressource) GetTemperaturesOfTheYear(c *gin.Context) {
+	temperatures := []Temperature{}
+	temperaturesWillBeReturned := []Temperature{}
+
+	r.db.Find(&temperatures)
+	if len(temperatures) == 0 {
+		c.JSON(404, gin.H{"error": "No temperature in database"})
+	} else {
+		now := time.Now()
+		for _, t := range temperatures {
+			if t.Date.Year() == now.Year() {
+				temperaturesWillBeReturned = append(temperaturesWillBeReturned, t)
+			}
+		}
+		if len(temperaturesWillBeReturned) == 0 {
+			c.JSON(404, gin.H{"error": "No temperature in database"})
+		} else {
+			c.JSON(200, temperaturesWillBeReturned)
+		}
+	}
+}
+
 // Post a temperature into database
 func (r *Ressource) PostTemperature(c *gin.Context) {
 	var temp OnlyTemperature
@@ -73,6 +142,9 @@ func startApp(db *gorm.DB) {
 	v1 := g.Group("api/v1")
 	{
 		v1.GET("/temperatures", r.GetTemperature)
+		v1.GET("/temperatures_of_the_day", r.GetTemperaturesOfTheDay)
+		v1.GET("/temperatures_of_the_month", r.GetTemperaturesOfTheMonth)
+		v1.GET("/temperatures_of_the_year", r.GetTemperaturesOfTheYear)
 		v1.POST("/temperature", r.PostTemperature)
 	}
 	g.Run(":" + strconv.Itoa(viper.GetInt("port")))
