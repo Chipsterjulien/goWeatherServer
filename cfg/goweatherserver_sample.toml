@@ -1,0 +1,10 @@
+# logtype can take: debug, info, notice, warning, error, critical
+# warning is the default
+logtype = "warning"
+
+[database]
+path = "/var/lib/goweatherserver"
+filename = "temperature.db"
+
+[server]
+port = 8080

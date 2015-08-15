@@ -9,14 +9,17 @@ import (
 	"time"
 )
 
+// Struct to get only temperature. time is useless
 type OnlyTemperature struct {
 	Temp float64
 }
 
+// Struct permit to have DB access on method
 type Ressource struct {
 	db *gorm.DB
 }
 
+// Init DB
 func NewRessource(db *gorm.DB) Ressource {
 	return Ressource{
 		db: db,
@@ -28,9 +31,13 @@ func (r *Ressource) DeleteTemperature(c *gin.Context) {
 	log := logging.MustGetLogger("log")
 	id := c.Params.ByName("id")
 
+	log.Debug("id for delete a temperature is \"%s\"", id)
+
 	if id != "" {
 		var temperature Temperature
 		r.db.First(&temperature, id)
+		log.Debug("Temperature to delete is:")
+		log.Debug("  temperature: %f\n  date: %v", temperature.Temp, temperature.Date)
 		r.db.Delete(&temperature)
 
 		c.JSON(200, gin.H{"id #" + id: "delete"})
@@ -41,10 +48,19 @@ func (r *Ressource) DeleteTemperature(c *gin.Context) {
 }
 
 // Get all temperatures in database
-func (r *Ressource) GetTemperature(c *gin.Context) {
+func (r *Ressource) GetTemperatures(c *gin.Context) {
+	log := logging.MustGetLogger("log")
 	temperatures := []Temperature{}
 
 	r.db.Find(&temperatures)
+
+	if viper.GetString("logtype") == "debug" {
+		log.Debug("Temperatures in DB are:")
+		for _, temp := range temperatures {
+			log.Debug("  Temperature: %f\n  Date: %v", temp.Temp, temp.Date)
+		}
+	}
+
 	if len(temperatures) == 0 {
 		c.JSON(404, gin.H{"error": "No temperature in database"})
 	} else {
@@ -123,9 +139,13 @@ func (r *Ressource) GetTemperaturesOfTheYear(c *gin.Context) {
 
 // Post a temperature into database
 func (r *Ressource) PostTemperature(c *gin.Context) {
+	log := logging.MustGetLogger("log")
 	var temp OnlyTemperature
 
 	c.Bind(&temp)
+
+	log.Debug("Temperature: %f", temp.Temp)
+
 	temperature := Temperature{
 		Temp: temp.Temp,
 		Date: time.Now(),
@@ -135,17 +155,24 @@ func (r *Ressource) PostTemperature(c *gin.Context) {
 	c.JSON(200, temperature)
 }
 
+// Main function
 func startApp(db *gorm.DB) {
+	log := logging.MustGetLogger("log")
+
+	if viper.GetString("logtype") != "debug" {
+		gin.SetMode(gin.ReleaseMode)
+	}
 	g := gin.Default()
 	r := NewRessource(db)
 
 	v1 := g.Group("api/v1")
 	{
-		v1.GET("/temperatures", r.GetTemperature)
+		v1.GET("/temperatures", r.GetTemperatures)
 		v1.GET("/temperatures_of_the_day", r.GetTemperaturesOfTheDay)
 		v1.GET("/temperatures_of_the_month", r.GetTemperaturesOfTheMonth)
 		v1.GET("/temperatures_of_the_year", r.GetTemperaturesOfTheYear)
 		v1.POST("/temperature", r.PostTemperature)
 	}
-	g.Run(":" + strconv.Itoa(viper.GetInt("port")))
+	log.Debug("Port: %d", viper.GetInt("server.port"))
+	g.Run(":" + strconv.Itoa(viper.GetInt("server.port")))
 }

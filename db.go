@@ -18,6 +18,10 @@ type Temperature struct {
 
 func Initdb() *gorm.DB {
 	log := logging.MustGetLogger("log")
+
+	log.Debug("db path: %s", viper.GetString("db.path"))
+	log.Debug("db filename: %s", viper.GetString("db.filename"))
+
 	db, err := gorm.Open(
 		"sqlite3",
 		filepath.Join(
@@ -26,10 +30,12 @@ func Initdb() *gorm.DB {
 		),
 	)
 	if err != nil {
-		log.Critical("Unable to open db file:", err)
+		log.Critical("Unable to open db file: %s", err)
 		os.Exit(1)
 	}
-	db.LogMode(viper.GetBool("debug"))
+	if viper.GetString("logtype") == "debug" {
+		db.LogMode(viper.GetBool("debug"))
+	}
 	db.CreateTable(new(Temperature))
 	db.DB().Ping()
 
