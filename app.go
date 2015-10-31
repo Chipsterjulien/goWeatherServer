@@ -166,8 +166,7 @@ func startApp(db *gorm.DB) {
 	g := gin.Default()
 	r := NewRessource(db)
 	
-	router := gin.New()
-	router.Use(cors.Middleware(cors.Config{
+	g.Use(cors.Middleware(cors.Config {
 	    Origins:        "*",
 	    Methods:        "GET, PUT, POST, DELETE",
 	    RequestHeaders: "Origin, Authorization, Content-Type",
@@ -176,7 +175,6 @@ func startApp(db *gorm.DB) {
 	    Credentials: true,
 	    ValidateHeaders: false,
 	}))
-
 
 	v1 := g.Group("api/v1")
 	{
