@@ -5,6 +5,7 @@ import (
 	"github.com/jinzhu/gorm"
 	"github.com/op/go-logging"
 	"github.com/spf13/viper"
+	"github.com/itsjamie/gin-cors"
 	"strconv"
 	"time"
 )
@@ -164,13 +165,25 @@ func startApp(db *gorm.DB) {
 	}
 	g := gin.Default()
 	r := NewRessource(db)
+	
+	router := gin.New()
+	router.Use(cors.Middleware(cors.Config{
+	    Origins:        "*",
+	    Methods:        "GET, PUT, POST, DELETE",
+	    RequestHeaders: "Origin, Authorization, Content-Type",
+	    ExposedHeaders: "",
+	    MaxAge: 50 * time.Second,
+	    Credentials: true,
+	    ValidateHeaders: false,
+	}))
+
 
 	v1 := g.Group("api/v1")
 	{
 		v1.GET("/temperatures", r.GetTemperatures)
-		v1.GET("/temperatures_of_the_day", r.GetTemperaturesOfTheDay)
-		v1.GET("/temperatures_of_the_month", r.GetTemperaturesOfTheMonth)
-		v1.GET("/temperatures_of_the_year", r.GetTemperaturesOfTheYear)
+		//v1.GET("/temperatures_of_the_day", r.GetTemperaturesOfTheDay)
+		//v1.GET("/temperatures_of_the_month", r.GetTemperaturesOfTheMonth)
+		//v1.GET("/temperatures_of_the_year", r.GetTemperaturesOfTheYear)
 		v1.POST("/temperature", r.PostTemperature)
 	}
 	log.Debug("Port: %d", viper.GetInt("server.port"))
